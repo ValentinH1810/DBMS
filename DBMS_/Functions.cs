@@ -32,7 +32,7 @@ namespace DBMS_
             return splitText;
         }
 
-        public static List<String> SplitString(String text, char[] regex)
+        public static List<string> SplitString(string text, char[] regex)
         {
             List<string> splitText = new List<string>();
             int currentIndex = 0;
@@ -159,6 +159,23 @@ namespace DBMS_
 
             File.Delete(fileName);
             Console.WriteLine($"Table {tableName} is removed.\n\n");
+        }
+
+        public static void Insert(string tableName, List<List<object>> valueLines)
+        {
+            string fileName = $@"D:\{tableName}.txt";
+
+            using (StreamWriter writer = new StreamWriter($"{tableName}.txt"))
+            {
+                foreach (List<object> values in valueLines)
+                {
+                    foreach(object value in values)
+                    {
+                        writer.WriteLine(value);
+                        writer.WriteLine("\t");
+                    }                   
+                }
+            }
         }
 
         public static int TableInfo(string tableName)
