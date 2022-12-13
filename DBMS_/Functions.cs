@@ -14,6 +14,7 @@ namespace DBMS_
             List<string> splitText = new List<string>();
             int currentIndex = 0;
             int startIndex = 0;
+
             foreach (char character in text.ToCharArray())
             {
                 if (character == splitChar)
@@ -38,12 +39,17 @@ namespace DBMS_
             int currentIndex = 0;
             int startIndex = 0;
             bool hasEntered = false;
-            foreach (char character in text.ToCharArray())
+            foreach (char character in text)
             {
                 foreach (char regexCharacter in regex)
                 {
                     if (regexCharacter == character && !hasEntered)
-                    {
+                    { 
+                        if(startIndex == currentIndex)
+                        {
+                            startIndex++;
+                                break;
+                        }
                         splitText.Add(substring(text, startIndex, currentIndex));
                         startIndex = currentIndex + 1;
                         hasEntered = true;
@@ -54,7 +60,7 @@ namespace DBMS_
             }
 
             //has split -> add last text
-            if (startIndex != 0)
+            if (startIndex != 0 && startIndex != currentIndex)
             {
                 splitText.Add(substring(text, startIndex, text.Length));
             }
@@ -87,39 +93,65 @@ namespace DBMS_
 
         public static char charAt(string text, int index)
         {
-            return text.ToCharArray()[index];
+            return text[index];
         }
 
-        public static string Join(List<string> list, string delimiter)
-        { //Make StringBuilder...
-            string concatText = "";
-            for (int i = 0; i < list.Count - 1; i++)
-            {
-                concatText += list[i] + delimiter;
-            }
-            return concatText;
-        }
+        //public static string Join(List<string> list, string delimiter)
+        //{ //Make StringBuilder...
+        //    string concatText = "";
+        //    for (int i = 0; i < list.Count - 1; i++)
+        //    {
+        //        concatText += list[i] + delimiter;
+        //    }
+        //    return concatText;
+        //}
 
-        public static string toLowerCase(string text)
+        //public static string toLowerCase(string text)
+        //{
+        //    char[] textToLowerCase = new char[text.Length];
+        //    int counter = 0;
+        //    foreach (char letter in text.ToCharArray())
+        //    {
+        //        //check if upper case...
+        //        if ((int)Functions.charAt(text, counter) >= 65 && (int)Functions.charAt(text, counter) <= 90)
+        //        {
+        //            textToLowerCase[counter] = (char)((int)Functions.charAt(text, counter) + 32);
+        //        }
+        //        else
+        //        {
+        //            textToLowerCase[counter] = Functions.charAt(text, counter);
+        //        }
+        //        counter++;
+        //    }
+        //    return new string(textToLowerCase);
+        //}
+
+        private static bool Contains(string s1, string s2)
         {
-            char[] textToLowerCase = new char[text.Length];
-            int counter = 0;
-            foreach (char letter in text.ToCharArray())
+            int correctCharCount = 0;
+
+            for (int i = 0, j = 0; i < s1.Length; i++)
             {
-                //check if upper case...
-                if ((int)Functions.charAt(text, counter) >= 65 && (int)Functions.charAt(text, counter) <= 90)
+                if (s1[i] == s2[j])
                 {
-                    textToLowerCase[counter] = (char)((int)Functions.charAt(text, counter) + 32);
+                    correctCharCount++;
+                    j++;
                 }
                 else
                 {
-                    textToLowerCase[counter] = Functions.charAt(text, counter);
+                    correctCharCount = 0;
+                    j = 0;
+                    i--;
                 }
-                counter++;
             }
-            return new string(textToLowerCase);
+
+            if (correctCharCount == s2.Length) 
+                return true;
+            else 
+                return false;
         }
-        public static void Create(string tableName, List<string> columnsNames)
+
+        public static void Create(string tableName, List<string> columnsNames, List<string> tables)
         {
             string fileName = $@"D:\{tableName}.txt";
 
@@ -132,7 +164,7 @@ namespace DBMS_
             FileStream stream = new FileStream(fileName, FileMode.CreateNew);
 
             using (StreamWriter writer = new StreamWriter(stream))
-            {
+            { 
                 writer.Write("Table name: ");
                 writer.WriteLine(tableName);
                 writer.WriteLine();
@@ -144,7 +176,18 @@ namespace DBMS_
                 writer.WriteLine();
             }
 
-            Console.WriteLine("Table created.\n\n");
+            using (StreamWriter writer = new StreamWriter(@"D:\Tables.txt"))
+            {
+                writer.WriteLine("All tables:");
+                foreach (var table in tables)
+                {
+                    writer.WriteLine(table);
+                }
+                writer.WriteLine();
+                writer.WriteLine();
+            }
+
+            Console.WriteLine("Table created.\n\n\n");
         }
 
         public static void Drop(string tableName)
@@ -153,36 +196,73 @@ namespace DBMS_
 
             if (!File.Exists(fileName))
             {
-                Console.WriteLine("This table doesn't exist!\n\n");
+                Console.WriteLine("This table doesn't exist!\n\n\n");
                 return;
             }
 
             File.Delete(fileName);
-            Console.WriteLine($"Table {tableName} is removed.\n\n");
-        }
 
-        public static void Insert(string tableName, List<List<object>> valueLines)
-        {
-            string fileName = $@"D:\{tableName}.txt";
+            // 1. Read the content of the file
+            string[] readText = File.ReadAllLines(@"D:\Tables.txt");
 
-            using (StreamWriter writer = new StreamWriter($"{tableName}.txt"))
+            // 2. Empty the file
+            File.WriteAllText(@"D:\Tables.txt", String.Empty);
+
+            // 3. Fill up again, but without the deleted line
+            using (StreamWriter writer = new StreamWriter(@"D:\Tables.txt"))
             {
-                foreach (List<object> values in valueLines)
+                foreach (string s in readText)
                 {
-                    foreach(object value in values)
+                    if (!s.Equals(tableName))
                     {
-                        writer.WriteLine(value);
-                        writer.WriteLine("\t");
-                    }                   
+                        writer.WriteLine(s);
+                    }
                 }
             }
+
+            Console.WriteLine($"Table {tableName} is removed.\n\n\n");
         }
 
-        public static int TableInfo(string tableName)
+        public static void Insert(string tableName, List<List<string>> valueLines)
         {
             string fileName = $@"D:\{tableName}.txt";
 
-            return Directory.GetFiles(fileName).Length;
+            using StreamWriter file = new(fileName, append: true);
+            {
+                foreach (List<string> values in valueLines)
+                {
+                    foreach(string value in values)
+                    {
+                        file.Write(value);
+                        file.Write("\t");                      
+                    }
+                    file.WriteLine();
+                }
+            }      
+        }
+
+        public static void Select(string tableName, List<string> columnNames, List<List<string>> valueLines)
+        {
+            
+        }
+
+        public static void ListTables()
+        {
+            string stored = File.ReadAllText(@"D:\Tables.txt");
+            Console.WriteLine(stored);            
+        }
+
+        public static void TableInfo(string tableName)
+        {
+            string fileName = $@"D:\{tableName}.txt";
+            string stored = File.ReadAllText(fileName);
+            int valueLinesCount = File.ReadAllLines(fileName).Length - 3;
+
+            Console.WriteLine();
+            Console.WriteLine(stored + "\n");
+            Console.Write("Records count: ");
+            Console.WriteLine(valueLinesCount);
+            Console.Write("\n\n\n");
         }
     }
 }
