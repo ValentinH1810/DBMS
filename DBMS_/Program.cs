@@ -30,11 +30,11 @@ namespace DBMS_
                 string tableName;
                 string valueType = String.Empty;
 
-                //CreateTable Marto (Id:int, Name:string)
-                //Insert INTO Marto (Id, Name) VALUES (1, Martin) 
+                //CreateTable Sample (Id:int, Name:string, Town:string)
+                //Insert INTO Sample (Id, Name, Town) VALUES (1, Martin, Aitos) (2, Valentin, Sliven) (3, Vasil, Sliven)
 
-                if (lineWords.Count > 1)
-                {
+                //if (lineWords.Count > 1)
+                //{
                     switch (lineWords[0])
                     {
                         case "CreateTable":
@@ -85,29 +85,64 @@ namespace DBMS_
                                 Functions.Drop(tableName);
                             }
                             break;
-                        case "Insert": //Insert INTO Marto (Id, Name) VALUES (1, "Ivan")
+                        case "Insert": //Insert INTO Sample (Id, Name, Town) VALUES (1, Marto, Aitos) (2, Valentin, Sliven)
                             {
-                                if (lineWords[1] == "INTO" && lineWords[4] == "VALUES")
+                                List<string> lineWords2 = Functions.SplitString(line, new char[] { '(', ')' });
+
+                                if (!lineWords[1].Equals("INTO") && !lineWords2[2].Equals(" VALUES ")) return;
+
+                                try
                                 {
                                     tableName = lineWords[2];
-                                    List<string> lineWords2 = Functions.SplitString(line, new char[] { '(', ')' });
 
                                     if (Functions.SplitString(lineWords2[1], new char[] { ' ', ',' }).Count
                                         == Functions.SplitString(lineWords2[3], new char[] { ' ', ',' }).Count)
                                     {
-                                        valueLines.Add(Functions.SplitString(lineWords2[3], new char[] { ' ', ',' }));
+                                        for (int i = 3; i < lineWords2.Count; i += 2)
+                                        {
+                                            valueLines.Add(Functions.SplitString(lineWords2[i], new char[] { ' ', ',' }));
+                                        }              
 
                                         Functions.Insert(tableName, valueLines);
-                                        valueLines.Clear();
-                                        Console.WriteLine("SUCCESS");
+                                        valueLines.Clear();                                      
                                     }
                                 }
-                                else
+                                catch(Exception e)
                                 {
-                                    Console.WriteLine("Invalid command!\n\n\n");
-                                }
+                                    return;
+                                }                             
                             }
                             break;
+                        case "Delete": //Delete FROM Sample (Id, Name, Town) VALUES (1, Marto, Aitos)
+                            {
+                                List<string> lineWords2 = Functions.SplitString(line, new char[] { '(', ')' });
+
+                                if (lineWords[1].Equals("INTO") && lineWords2[2].Equals(" VALUES ")) return;
+
+                                try
+                                {
+                                    tableName = lineWords[2];                                 
+
+                                    if (Functions.SplitString(lineWords2[1], new char[] { ' ', ',' }).Count
+                                        == Functions.SplitString(lineWords2[3], new char[] { ' ', ',' }).Count)
+                                    {
+                                        List<string> linesToRemove = new List<string>();
+
+                                        for (int i = 3; i < lineWords2.Count; i += 2)
+                                        {
+                                            linesToRemove = Functions.SplitString(lineWords2[i], new char[] { ' ', ',' });
+                                        }
+
+                                        Functions.Delete(tableName, linesToRemove);
+                                        valueLines.Clear();
+                                    }
+                                }
+                                catch (Exception e)
+                                {
+                                    return;
+                                }
+                            }
+                                break;
                         case "TableInfo":
                             {
                                 tableName = lineWords[1];
@@ -133,13 +168,13 @@ namespace DBMS_
                                     List<List<string>> selectedColumnsValues = new List<List<string>>();
                                     foreach (string selectedColumn in selectedColumns)
                                     {
-                                        List<string> columnsTotal = Functions.split(lines[2], '\t');
+                                        List<string> columnsTotal = Functions.Split(lines[2], '\t');
                                         int selectedColumnIndex = FindIndex(columnsTotal, selectedColumn);
                                         List<string> temp = new List<string>();
 
                                         for (int i = 3; i < lines.Length; i++)
                                         {
-                                            temp.Add(Functions.split(lines[i], '\t')[selectedColumnIndex]);
+                                            temp.Add(Functions.Split(lines[i], '\t')[selectedColumnIndex]);
                                         }
                                         selectedColumnsValues.Add(temp);
                                         temp.Clear();
@@ -151,31 +186,34 @@ namespace DBMS_
                                 }
                             }
                             break;
+                    case "Exit":
+                        exit = true;
+                        break;
                         default:
                             Console.WriteLine("Invalid command!\n\n\n");
                             break;
                     }
-                }
-                else
-                {
-                    if(line == "ListTables")
-                    {
-                        Console.WriteLine();
-                        Functions.ListTables();
-                    }
-                    else if (line == "Exit")
-                    {
-                        exit = true;
-                    }
-                    else if (line == String.Empty)
-                    {
-                        Console.WriteLine("Please enter a command to continue!\n\n\n");
-                    }
-                    else
-                    {
-                        Console.WriteLine("Invalid command!\n\n\n");
-                    }
-                }
+                //}
+                //else
+                //{
+                //    if(line == "ListTables")
+                //    {
+                //        Console.WriteLine();
+                //        Functions.ListTables();
+                //    }
+                //    else if (line == "Exit")
+                //    {
+                //        exit = true;
+                //    }
+                //    else if (line == String.Empty)
+                //    {
+                //        Console.WriteLine("Please enter a command to continue!\n\n\n");
+                //    }
+                //    else
+                //    {
+                //        Console.WriteLine("Invalid command!\n\n\n");
+                //    }
+                //}
             }
         }
 
