@@ -19,7 +19,7 @@ namespace DBMS_
             {
                 if (character == splitChar)
                 {
-                    splitText.Add(substring(text, startIndex, currentIndex));
+                    splitText.Add(Substring(text, startIndex, currentIndex));
                     startIndex = currentIndex + 1;
                 }
                 currentIndex++;
@@ -29,7 +29,7 @@ namespace DBMS_
             if (startIndex != 0)
             {
                 if (startIndex == text.Length) return splitText;
-                splitText.Add(substring(text, startIndex, text.Length));
+                splitText.Add(Substring(text, startIndex, text.Length));
             }
             else
             {
@@ -56,7 +56,7 @@ namespace DBMS_
                             startIndex++;
                                 break;
                         }
-                        splitText.Add(substring(text, startIndex, currentIndex));
+                        splitText.Add(Substring(text, startIndex, currentIndex));
                         startIndex = currentIndex + 1;
                         hasEntered = true;
                     }
@@ -69,7 +69,7 @@ namespace DBMS_
             if (startIndex != 0)
             {
                 if (startIndex == text.Length) return splitText;
-                splitText.Add(substring(text, startIndex, text.Length));
+                splitText.Add(Substring(text, startIndex, text.Length));
             }
             else
             {
@@ -78,19 +78,19 @@ namespace DBMS_
             return splitText;
         }
 
-        public static string SubString(string text, int index)
-        {
-            char[] substringArray = new char[text.Length - index];
-            int counter = 0;
-            for (int i = index; i < text.Length; i++, counter++)
-            {
-                substringArray[counter] = charAt(text, i);
-            }
+        //public static string SubString(string text, int index)
+        //{
+        //    char[] substringArray = new char[text.Length - index];
+        //    int counter = 0;
+        //    for (int i = index; i < text.Length; i++, counter++)
+        //    {
+        //        substringArray[counter] = charAt(text, i);
+        //    }
 
-            return new string(substringArray);
-        }
+        //    return new string(substringArray);
+        //}
 
-        public static string substring(string text, int start, int end)
+        public static string Substring(string text, int start, int end)
         {
             char[] substringArray = new char[end - start];
             int counter = 0;
@@ -162,61 +162,76 @@ namespace DBMS_
                 return false;
         }
 
-        public static void Create(string tableName, List<string> columnsNames, List<string> tables)
+        public static void Create(string tableName, List<string> columnsNames)
         {
+            string dirName = $@"C:\Users\USER\Desktop\Tables";
+            if (!Directory.Exists(dirName))
+            {
+                Directory.CreateDirectory(dirName);
+            }
+
             string fileName = $@"C:\Users\USER\Desktop\Tables\{tableName}.txt";
 
             // Check if file already exists. If yes, delete it.     
             if (File.Exists(fileName))
             {
                 Console.WriteLine("This table already exists. Do you want to replace it?");
-                Console.WriteLine("y - Yes; n - No");
+                Console.WriteLine("Yes / No");
 
                 string option = Console.ReadLine();
 
-                switch(option)
+                while (option != "Yes" && option != "No") 
                 {
-                    case "y":
+                    Console.WriteLine("Invalid answer!");
+                    Console.WriteLine("Yes / No");
+                    option = Console.ReadLine();
+                } 
+
+                if (option == "Yes")
+                {
+                    File.Delete(fileName);
+
+                    FileStream stream = new FileStream(fileName, FileMode.CreateNew);
+
+                    using (StreamWriter writer = new StreamWriter(stream))
+                    {
+                        writer.Write("Table name: ");
+                        writer.WriteLine(tableName);
+                        writer.WriteLine();
+                        foreach (var column in columnsNames)
                         {
-                            File.Delete(fileName);
-
-                            FileStream stream = new FileStream(fileName, FileMode.CreateNew);
-
-                            using (StreamWriter writer = new StreamWriter(stream))
-                            {
-                                writer.Write("Table name: ");
-                                writer.WriteLine(tableName);
-                                writer.WriteLine();
-                                foreach (var column in columnsNames)
-                                {
-                                    writer.Write(column);
-                                    writer.Write("\t\t");
-                                }
-                                writer.WriteLine();
-                            }
-
-                            //using (StreamWriter writer = new StreamWriter(@"D:\Tables.txt"))
-                            //{
-                            //    writer.WriteLine("All tables:");
-                            //    foreach (var table in tables)
-                            //    {
-                            //        writer.WriteLine(table);
-                            //    }
-                            //    writer.WriteLine();
-                            //    writer.WriteLine();
-                            //}
-
-                            Console.WriteLine("Table created.\n\n\n");
+                            writer.Write(column);
+                            writer.Write("\t\t");
                         }
-                        break;
-                    case "n":
-                        Console.WriteLine("\n\n\n");
-                        break;
-                    default:
-                        Console.WriteLine("Invalid command!\n\n\n");
-                        break;
+                        writer.WriteLine();
+                    }
+
+                    Console.WriteLine("Table created.\n\n\n");
                 }
-            }          
+                else if (option == "No")
+                {
+                    Console.WriteLine("\n\n\n");
+                }         
+            }
+            else
+            {
+                FileStream stream = new FileStream(fileName, FileMode.CreateNew);
+
+                using (StreamWriter writer = new StreamWriter(stream))
+                {
+                    writer.Write("Table name: ");
+                    writer.WriteLine(tableName);
+                    writer.WriteLine();
+                    foreach (var column in columnsNames)
+                    {
+                        writer.Write(column);
+                        writer.Write("\t\t");
+                    }
+                    writer.WriteLine();
+                }
+
+                Console.WriteLine("Table created.\n\n\n");
+            }  
         }
 
         public static void Drop(string tableName)
@@ -328,20 +343,35 @@ namespace DBMS_
 
         public static void ListTables()
         {
-            //foreach(var tablePath in Directory.GetFiles($@"C:\Users\USER\Desktop\Tables\{tableName}.txt"))           
+            string path = $@"C:\Users\USER\Desktop\Tables\";
+
+            foreach(var tablePath in Directory.GetFiles(path, "*.txt"))
+            {
+                var tableName = SplitString(tablePath, new char[] { ' ', '\\', ':', '.' });
+                Console.WriteLine(tableName[^2]);
+                Console.WriteLine("\n\n\n");
+            }
         }
 
         public static void TableInfo(string tableName)
         {
-            string fileName = $@"D:\{tableName}.txt";
-            string stored = File.ReadAllText(fileName);
-            int valueLinesCount = File.ReadAllLines(fileName).Length - 3;
+            string fileName = $@"C:\Users\USER\Desktop\Tables\{tableName}.txt";
 
-            Console.WriteLine();
-            Console.WriteLine(stored + "\n");
-            Console.Write("Records count: ");
-            Console.WriteLine(valueLinesCount);
-            Console.Write("\n\n\n");
+            if (File.Exists(fileName))
+            {
+                string stored = File.ReadAllText(fileName);
+                int valueLinesCount = File.ReadAllLines(fileName).Length - 3;
+
+                Console.WriteLine();
+                Console.WriteLine(stored + "\n");
+                Console.Write("Records count: ");
+                Console.WriteLine(valueLinesCount);
+                Console.Write("\n\n\n");
+            }
+            else
+            {
+                Console.WriteLine("This table doesn't exist!\n\n\n");
+            }
         }
     }
 }

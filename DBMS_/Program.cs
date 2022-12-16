@@ -16,7 +16,6 @@ namespace DBMS_
         static void Main(string[] args)
         {
             bool exit = false;
-            List<string> tables = new List<string>();
             List<string> columns = new List<string>();
             List<List<string>> valueLines = new List<List<string>>();
 
@@ -41,7 +40,7 @@ namespace DBMS_
                             {
                                 tableName = lineWords[1];
 
-                                tables.Add(tableName);
+                                //tables.Add(tableName);
 
                                 for (int i = 2; i < lineWords.Count; i += 2)
                                 {
@@ -70,17 +69,17 @@ namespace DBMS_
                                 //    }
                                 //} 
 
-                                Functions.Create(tableName, columns, tables);
+                                Functions.Create(tableName, columns);
                             }
                             break;
                         case "DropTable":
                             {
                                 tableName = lineWords[1];
 
-                                for (int i = 0; i < tables.Count; i++)
-                                {
-                                    tables.Remove(tableName);
-                                }
+                                //for (int i = 0; i < tables.Count; i++)
+                                //{
+                                //    tables.Remove(tableName);
+                                //}
 
                                 Functions.Drop(tableName);
                             }
@@ -149,6 +148,11 @@ namespace DBMS_
                                 Functions.TableInfo(tableName);
                             }
                             break;
+                        case "ListTables":
+                            {
+                                Functions.ListTables();
+                            }
+                        break;   
                         case "Select": //Select (Name, DateBirth) FROM Sample WHERE Id <> 5 AND DateBirth > “01.01.2000”
                             {
                                 try
@@ -186,34 +190,16 @@ namespace DBMS_
                                 }
                             }
                             break;
-                    case "Exit":
-                        exit = true;
-                        break;
+                        case "Exit":
+                            exit = true;
+                            break;
+                        case "":
+                            Console.WriteLine("Please enter a command to continue!\n\n\n");
+                            break;
                         default:
                             Console.WriteLine("Invalid command!\n\n\n");
                             break;
                     }
-                //}
-                //else
-                //{
-                //    if(line == "ListTables")
-                //    {
-                //        Console.WriteLine();
-                //        Functions.ListTables();
-                //    }
-                //    else if (line == "Exit")
-                //    {
-                //        exit = true;
-                //    }
-                //    else if (line == String.Empty)
-                //    {
-                //        Console.WriteLine("Please enter a command to continue!\n\n\n");
-                //    }
-                //    else
-                //    {
-                //        Console.WriteLine("Invalid command!\n\n\n");
-                //    }
-                //}
             }
         }
 
