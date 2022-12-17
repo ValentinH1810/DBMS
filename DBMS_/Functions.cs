@@ -9,6 +9,195 @@ namespace DBMS_
 {
     class Functions
     {
+        public static string path = @"..\..\..\Tables\";
+        public static void Create(string tableName, List<string> columnsNames)
+        {
+            string fileName = path + $"{tableName}.txt";
+
+            // Check if file already exists. If yes, delete it.     
+            if (!File.Exists(fileName))
+            {
+                File.Delete(fileName);
+
+                FileStream stream = new FileStream(fileName, FileMode.CreateNew);
+
+                using (StreamWriter writer = new StreamWriter(stream))
+                {
+                    writer.Write("Table name: ");
+                    writer.WriteLine(tableName);
+                    writer.WriteLine();
+                    foreach (var column in columnsNames)
+                    {
+                        writer.Write(column);
+                        writer.Write("\t\t");
+                    }
+                    writer.WriteLine();
+                }
+
+                Console.WriteLine("Table created.\n\n\n");
+                columnsNames.Clear();
+            }
+            else
+            {
+                Console.WriteLine("This table already exists. Do you want to replace it?");
+                Console.WriteLine("Yes / No");
+
+                string option = Console.ReadLine();
+
+                while (toLower(option) != "yes" && toLower(option) != "no")
+                {
+                    Console.WriteLine("Invalid answer!");
+                    Console.WriteLine("Yes / No");
+                    option = Console.ReadLine();
+                }
+
+                if (toLower(option) == "yes")
+                {
+                    File.Delete(fileName);
+
+                    FileStream stream = new FileStream(fileName, FileMode.CreateNew);
+
+                    using (StreamWriter writer = new StreamWriter(stream))
+                    {
+                        writer.Write("Table name: ");
+                        writer.WriteLine(tableName);
+                        writer.WriteLine();
+                        foreach (var column in columnsNames)
+                        {
+                            writer.Write(column);
+                            writer.Write("\t\t");
+                        }
+                        writer.WriteLine();
+                    }
+
+                    Console.WriteLine("Table replaced.\n\n\n");
+                }
+                else if(toLower(option) == "no")
+                {
+                    Console.WriteLine("\n\n\n");
+                }
+            }            
+        }
+
+        public static void Drop(string tableName)
+        {
+            string fileName = path + $"{tableName}.txt";
+
+            if (!File.Exists(fileName))
+            {
+                Console.WriteLine("This table doesn't exist!\n\n\n");
+                return;
+            }
+
+            File.Delete(fileName);
+            Console.WriteLine($"Table {tableName} is removed.\n\n\n");
+        }
+
+        public static void Insert(string tableName, List<List<string>> valueLines)
+        {
+            string fileName = path + $"{tableName}.txt";
+
+            if (!File.Exists(fileName))
+            {
+                Console.WriteLine("This table doesn't exist!\n\n\n");
+                return;
+            }
+            else
+            {
+                using StreamWriter file = new(fileName, append: true);
+                {
+                    foreach (List<string> values in valueLines)
+                    {
+                        foreach (string value in values)
+                        {
+                            file.Write(value);
+
+                            if (value.Length < 8)
+                            {
+                                file.Write("\t\t");
+                            }
+                            else
+                            {
+                                file.Write("\t");
+                            }
+                        }
+                        file.WriteLine();
+                    }
+                }
+
+                Console.WriteLine($"Line(s) added successfully into {tableName}\n\n\n");
+            }
+        }
+
+        public static void Delete(string tableName, List<string> linesToRemove)
+        {
+            string fileName = path + $"{tableName}.txt";
+
+            if (!File.Exists(fileName))
+            {
+                Console.WriteLine("This table doesn't exist!\n\n\n");
+                return;
+            }
+            else
+            {
+                string tempFile = Path.GetTempFileName();
+
+                using (var sr = new StreamReader(fileName))
+                using (var sw = new StreamWriter(tempFile))
+                {
+                    string line;
+
+                    while ((line = sr.ReadLine()) != null)
+                    {
+                        foreach (var lineToRemove in linesToRemove)
+                            if (line != lineToRemove)
+                                sw.WriteLine(line);
+                    }
+                }
+
+                File.Delete(fileName);
+                File.Move(tempFile, fileName);
+
+                Console.WriteLine($"Line(s) deleted successfully from {tableName}\n\n\n");
+            }
+        }
+
+        public static void Select(string tableName, List<string> columnNames, List<List<string>> valueLines)
+        {
+            //TO DO...
+        }
+
+        public static void ListTables()
+        {
+            foreach (var tablePath in Directory.GetFiles(path, "*.txt"))
+            {
+                var tableName = SplitString(tablePath, new char[] { ' ', '\\', ':', '.' });
+                Console.WriteLine(tableName[^2]);
+                Console.WriteLine("\n\n\n");
+            }
+        }
+
+        public static void TableInfo(string tableName)
+        {
+            string fileName = path + $"{tableName}.txt";
+
+            if (File.Exists(fileName))
+            {
+                string stored = File.ReadAllText(fileName);
+                int valueLinesCount = File.ReadAllLines(fileName).Length - 3;
+
+                Console.WriteLine();
+                Console.WriteLine(stored + "\n");
+                Console.Write("Records count: ");
+                Console.WriteLine(valueLinesCount);
+                Console.Write("\n\n\n");
+            }
+            else
+            {
+                Console.WriteLine("This table doesn't exist!\n\n\n");
+            }
+        }
+
         public static List<string> Split(string text, char splitChar)
         {
             List<string> splitText = new List<string>();
@@ -78,18 +267,6 @@ namespace DBMS_
             return splitText;
         }
 
-        //public static string SubString(string text, int index)
-        //{
-        //    char[] substringArray = new char[text.Length - index];
-        //    int counter = 0;
-        //    for (int i = index; i < text.Length; i++, counter++)
-        //    {
-        //        substringArray[counter] = charAt(text, i);
-        //    }
-
-        //    return new string(substringArray);
-        //}
-
         public static string Substring(string text, int start, int end)
         {
             char[] substringArray = new char[end - start];
@@ -106,16 +283,6 @@ namespace DBMS_
         {
             return text[index];
         }
-
-        //public static string Join(List<string> list, string delimiter)
-        //{ //Make StringBuilder...
-        //    string concatText = "";
-        //    for (int i = 0; i < list.Count - 1; i++)
-        //    {
-        //        concatText += list[i] + delimiter;
-        //    }
-        //    return concatText;
-        //}
 
         public static string toLower(string text)
         {
@@ -162,216 +329,26 @@ namespace DBMS_
                 return false;
         }
 
-        public static void Create(string tableName, List<string> columnsNames)
-        {
-            string dirName = $@"C:\Users\USER\Desktop\Tables";
-            if (!Directory.Exists(dirName))
-            {
-                Directory.CreateDirectory(dirName);
-            }
+        //public static string SubString(string text, int index)
+        //{
+        //    char[] substringArray = new char[text.Length - index];
+        //    int counter = 0;
+        //    for (int i = index; i < text.Length; i++, counter++)
+        //    {
+        //        substringArray[counter] = charAt(text, i);
+        //    }
 
-            string fileName = $@"C:\Users\USER\Desktop\Tables\{tableName}.txt";
+        //    return new string(substringArray);
+        //}
 
-            // Check if file already exists. If yes, delete it.     
-            if (File.Exists(fileName))
-            {
-                Console.WriteLine("This table already exists. Do you want to replace it?");
-                Console.WriteLine("Yes / No");
-
-                string option = Console.ReadLine();
-
-                while (option != "Yes" && option != "No") 
-                {
-                    Console.WriteLine("Invalid answer!");
-                    Console.WriteLine("Yes / No");
-                    option = Console.ReadLine();
-                } 
-
-                if (option == "Yes")
-                {
-                    File.Delete(fileName);
-
-                    FileStream stream = new FileStream(fileName, FileMode.CreateNew);
-
-                    using (StreamWriter writer = new StreamWriter(stream))
-                    {
-                        writer.Write("Table name: ");
-                        writer.WriteLine(tableName);
-                        writer.WriteLine();
-                        foreach (var column in columnsNames)
-                        {
-                            writer.Write(column);
-                            writer.Write("\t\t");
-                        }
-                        writer.WriteLine();
-                    }
-
-                    Console.WriteLine("Table created.\n\n\n");
-                }
-                else if (option == "No")
-                {
-                    Console.WriteLine("\n\n\n");
-                }         
-            }
-            else
-            {
-                FileStream stream = new FileStream(fileName, FileMode.CreateNew);
-
-                using (StreamWriter writer = new StreamWriter(stream))
-                {
-                    writer.Write("Table name: ");
-                    writer.WriteLine(tableName);
-                    writer.WriteLine();
-                    foreach (var column in columnsNames)
-                    {
-                        writer.Write(column);
-                        writer.Write("\t\t");
-                    }
-                    writer.WriteLine();
-                }
-
-                Console.WriteLine("Table created.\n\n\n");
-            }  
-        }
-
-        public static void Drop(string tableName)
-        {
-            string fileName = $@"C:\Users\USER\Desktop\Tables\{tableName}.txt";
-
-            if (!File.Exists(fileName))
-            {
-                Console.WriteLine("This table doesn't exist!\n\n\n");
-                return;
-            }
-
-            File.Delete(fileName);
-
-            //// 1. Read the content of the file
-            //string[] readText = File.ReadAllLines(@"D:\Tables.txt");
-
-            //// 2. Empty the file
-            //File.WriteAllText(@"D:\Tables.txt", String.Empty);
-
-            //// 3. Fill up again, but without the deleted line
-            //using (StreamWriter writer = new StreamWriter(@"D:\Tables.txt"))
-            //{
-            //    foreach (string s in readText)
-            //    {
-            //        if (!s.Equals(tableName))
-            //        {
-            //            writer.WriteLine(s);
-            //        }
-            //    }
-            //}
-
-            Console.WriteLine($"Table {tableName} is removed.\n\n\n");
-        }
-
-        public static void Insert(string tableName, List<List<string>> valueLines)
-        {
-            string fileName = $@"C:\Users\USER\Desktop\Tables\{tableName}.txt";
-
-            if (!File.Exists(fileName))
-            {
-                Console.WriteLine("This table doesn't exist!\n\n\n");
-                return;
-            }
-            else
-            {
-                using StreamWriter file = new(fileName, append: true);
-                {
-                    foreach (List<string> values in valueLines)
-                    {
-                        foreach (string value in values)
-                        {
-                            file.Write(value);
-
-                            if(value.Length < 8)
-                            {
-                                file.Write("\t\t");
-                            }
-                            else
-                            {
-                                file.Write("\t");
-                            }
-                        }
-                        file.WriteLine();
-                    }
-                }
-
-                Console.WriteLine($"Line(s) added successfully into {tableName}\n\n\n");
-            }         
-        }
-
-        public static void Delete(string tableName, List<string> linesToRemove)
-        {
-            string fileName = $@"C:\Users\USER\Desktop\Tables\{tableName}.txt";
-
-            if (!File.Exists(fileName))
-            {
-                Console.WriteLine("This table doesn't exist!\n\n\n");
-                return;
-            }
-            else
-            {
-                string tempFile = Path.GetTempFileName();
-
-                using (var sr = new StreamReader(fileName))
-                using (var sw = new StreamWriter(tempFile))
-                {
-                    string line;
-
-                    while ((line = sr.ReadLine()) != null)
-                    {
-                        foreach(var lineToRemove in linesToRemove)
-                        if (line != lineToRemove)
-                            sw.WriteLine(line);
-                    }
-                }
-
-                File.Delete(fileName);
-                File.Move(tempFile, fileName);
-
-                Console.WriteLine($"Line(s) deleted successfully from {tableName}\n\n\n");
-            }
-        }
-
-        public static void Select(string tableName, List<string> columnNames, List<List<string>> valueLines)
-        {
-            //TO DO...
-        }
-
-        public static void ListTables()
-        {
-            string path = $@"C:\Users\USER\Desktop\Tables\";
-
-            foreach(var tablePath in Directory.GetFiles(path, "*.txt"))
-            {
-                var tableName = SplitString(tablePath, new char[] { ' ', '\\', ':', '.' });
-                Console.WriteLine(tableName[^2]);
-                Console.WriteLine("\n\n\n");
-            }
-        }
-
-        public static void TableInfo(string tableName)
-        {
-            string fileName = $@"C:\Users\USER\Desktop\Tables\{tableName}.txt";
-
-            if (File.Exists(fileName))
-            {
-                string stored = File.ReadAllText(fileName);
-                int valueLinesCount = File.ReadAllLines(fileName).Length - 3;
-
-                Console.WriteLine();
-                Console.WriteLine(stored + "\n");
-                Console.Write("Records count: ");
-                Console.WriteLine(valueLinesCount);
-                Console.Write("\n\n\n");
-            }
-            else
-            {
-                Console.WriteLine("This table doesn't exist!\n\n\n");
-            }
-        }
+        //public static string Join(List<string> list, string delimiter)
+        //{ //Make StringBuilder...
+        //    string concatText = "";
+        //    for (int i = 0; i < list.Count - 1; i++)
+        //    {
+        //        concatText += list[i] + delimiter;
+        //    }
+        //    return concatText;
+        //}
     }
 }

@@ -19,20 +19,15 @@ namespace DBMS_
                     
                 List<string> lineWords = Functions.SplitString(line, new char[] {' ', ',', '(', ')', ':'});
                 var toLowerCommand = Functions.toLower(lineWords[0]);
-
-                string tableName;
-                string valueType = String.Empty;
-
-                //CreateTable Sample (Id:int, Name:string, Town:string)
-                //Insert INTO Sample (Id, Name, Town) VALUES (1, Martin, Aitos) (2, Valentin, Sliven) (3, Vasil, Sliven)
+                string tableName;             
 
                 switch (toLowerCommand)
                 {
-                    case "createtable":
+                    case "createtable": //CreateTable Sample (Id:int, Name:string, Town:string)
                         {
                             tableName = lineWords[1];
 
-                            for (int i = 2; i < lineWords.Count; i += 2)
+                            for (int i = 2; i < lineWords.Count; i += 2) 
                             {
                                 columns.Add(lineWords[i]);
                             }
@@ -46,7 +41,7 @@ namespace DBMS_
                             Functions.Drop(tableName);
                         }
                         break;
-                    case "insert": //Insert INTO Sample (Id, Name, Town) VALUES (1, Marto, Aitos) (2, Valentin, Sliven)
+                    case "insert": //Insert INTO Sample (Id, Name, Town) VALUES (1, Martin, Aitos) (2, Valentin, Sliven) (3, Vasil, Sliven)
                         {
                             List<string> lineWords2 = Functions.SplitString(line, new char[] { '(', ')' });
 
@@ -168,6 +163,7 @@ namespace DBMS_
         private static int FindIndex(List<string> columnsTotal, string selectedColumn)
         {
             int index = 0;
+
             foreach(string column in columnsTotal)
             {
                 if (column.Equals(selectedColumn))
