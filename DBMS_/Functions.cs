@@ -117,25 +117,25 @@ namespace DBMS_
         //    return concatText;
         //}
 
-        //public static string toLowerCase(string text)
-        //{
-        //    char[] textToLowerCase = new char[text.Length];
-        //    int counter = 0;
-        //    foreach (char letter in text.ToCharArray())
-        //    {
-        //        //check if upper case...
-        //        if ((int)Functions.charAt(text, counter) >= 65 && (int)Functions.charAt(text, counter) <= 90)
-        //        {
-        //            textToLowerCase[counter] = (char)((int)Functions.charAt(text, counter) + 32);
-        //        }
-        //        else
-        //        {
-        //            textToLowerCase[counter] = Functions.charAt(text, counter);
-        //        }
-        //        counter++;
-        //    }
-        //    return new string(textToLowerCase);
-        //}
+        public static string toLower(string text)
+        {
+            char[] textToLowerCase = new char[text.Length];
+            int counter = 0;
+            foreach (char letter in text.ToCharArray())
+            {
+                //check if upper case...
+                if ((int)Functions.charAt(text, counter) >= 65 && (int)Functions.charAt(text, counter) <= 90)
+                {
+                    textToLowerCase[counter] = (char)((int)Functions.charAt(text, counter) + 32);
+                }
+                else
+                {
+                    textToLowerCase[counter] = Functions.charAt(text, counter);
+                }
+                counter++;
+            }
+            return new string(textToLowerCase);
+        }
 
         private static bool Contains(string s1, string s2)
         {

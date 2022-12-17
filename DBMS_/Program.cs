@@ -6,13 +6,6 @@ namespace DBMS_
 {
     class Program
     {
-        //enum valueTypes
-        //{
-        //    Int,
-        //    String,
-        //    Date,
-        //}
-
         static void Main(string[] args)
         {
             bool exit = false;
@@ -24,7 +17,8 @@ namespace DBMS_
                 Console.WriteLine("Enter a command: ");
                 var line = Console.ReadLine();
                     
-                List<string> lineWords = Functions.SplitString(line, new char[] {' ', ',', '(', ')', ':'});               
+                List<string> lineWords = Functions.SplitString(line, new char[] {' ', ',', '(', ')', ':'});
+                var toLowerCommand = Functions.toLower(lineWords[0]);
 
                 string tableName;
                 string valueType = String.Empty;
@@ -32,174 +26,142 @@ namespace DBMS_
                 //CreateTable Sample (Id:int, Name:string, Town:string)
                 //Insert INTO Sample (Id, Name, Town) VALUES (1, Martin, Aitos) (2, Valentin, Sliven) (3, Vasil, Sliven)
 
-                //if (lineWords.Count > 1)
-                //{
-                    switch (lineWords[0])
-                    {
-                        case "CreateTable":
+                switch (toLowerCommand)
+                {
+                    case "createtable":
+                        {
+                            tableName = lineWords[1];
+
+                            for (int i = 2; i < lineWords.Count; i += 2)
                             {
-                                tableName = lineWords[1];
+                                columns.Add(lineWords[i]);
+                            }
 
-                                //tables.Add(tableName);
+                            Functions.Create(tableName, columns);
+                        }
+                        break;
+                    case "droptable":
+                        {
+                            tableName = lineWords[1];
+                            Functions.Drop(tableName);
+                        }
+                        break;
+                    case "insert": //Insert INTO Sample (Id, Name, Town) VALUES (1, Marto, Aitos) (2, Valentin, Sliven)
+                        {
+                            List<string> lineWords2 = Functions.SplitString(line, new char[] { '(', ')' });
 
-                                for (int i = 2; i < lineWords.Count; i += 2)
+                            if (!Functions.toLower(lineWords[1]).Equals("into") && !Functions.toLower(lineWords2[2]).Equals(" values ")) return;
+
+                            try
+                            {
+                                tableName = lineWords[2];
+
+                                if (Functions.SplitString(lineWords2[1], new char[] { ' ', ',' }).Count
+                                    == Functions.SplitString(lineWords2[3], new char[] { ' ', ',' }).Count)
                                 {
-                                    columns.Add(lineWords[i]);
+                                    for (int i = 3; i < lineWords2.Count; i += 2)
+                                    {
+                                        valueLines.Add(Functions.SplitString(lineWords2[i], new char[] { ' ', ',' }));
+                                    }
+
+                                    Functions.Insert(tableName, valueLines);
+                                    valueLines.Clear();
                                 }
-
-                                //for (int i = 3; i < lineWords.Count; i += 2)
-                                //{
-                                //    switch (lineWords[i])
-                                //    {
-                                //        case "int":
-                                //            {
-                                //                valueType = "Int";
-                                //            }
-                                //            break;
-                                //        case "string":
-                                //            {
-                                //                valueType = "String";
-                                //            }
-                                //            break;
-                                //        case "date":
-                                //            {
-                                //                valueType = "Date";
-                                //            }
-                                //            break;
-                                //    }
-                                //} 
-
-                                Functions.Create(tableName, columns);
                             }
-                            break;
-                        case "DropTable":
+                            catch (Exception e)
                             {
-                                tableName = lineWords[1];
-
-                                //for (int i = 0; i < tables.Count; i++)
-                                //{
-                                //    tables.Remove(tableName);
-                                //}
-
-                                Functions.Drop(tableName);
+                                return;
                             }
-                            break;
-                        case "Insert": //Insert INTO Sample (Id, Name, Town) VALUES (1, Marto, Aitos) (2, Valentin, Sliven)
+                        }
+                        break;
+                    case "delete": //Delete FROM Sample (Id, Name, Town) VALUES (1, Marto, Aitos)
+                        {
+                            List<string> lineWords2 = Functions.SplitString(line, new char[] { '(', ')' });
+
+                            if (Functions.toLower(lineWords[1]).Equals("into") && Functions.toLower(lineWords2[2]).Equals(" values ")) return;
+
+                            try
+                            {
+                                tableName = lineWords[2];
+
+                                if (Functions.SplitString(lineWords2[1], new char[] { ' ', ',' }).Count
+                                    == Functions.SplitString(lineWords2[3], new char[] { ' ', ',' }).Count)
+                                {
+                                    List<string> linesToRemove = new List<string>();
+
+                                    for (int i = 3; i < lineWords2.Count; i += 2)
+                                    {
+                                        linesToRemove = Functions.SplitString(lineWords2[i], new char[] { ' ', ',' });
+                                    }
+
+                                    Functions.Delete(tableName, linesToRemove);
+                                    valueLines.Clear();
+                                }
+                            }
+                            catch (Exception e)
+                            {
+                                return;
+                            }
+                        }
+                        break;
+                    case "tableinfo":
+                        {
+                            tableName = lineWords[1];
+                            Functions.TableInfo(tableName);
+                        }
+                        break;
+                    case "listtables":
+                        {
+                            Functions.ListTables();
+                        }
+                        break;
+                    case "select": //Select (Name, DateBirth) FROM Sample WHERE Id <> 5 AND DateBirth > “01.01.2000”
+                        {
+                            try
                             {
                                 List<string> lineWords2 = Functions.SplitString(line, new char[] { '(', ')' });
 
-                                if (!lineWords[1].Equals("INTO") && !lineWords2[2].Equals(" VALUES ")) return;
+                                //read table...
+                                //check the columns...
+                                //save in list...
+                                tableName = lineWords[3];
+                                string fileName = $@"D:\{tableName}.txt";
+                                string[] lines = File.ReadAllLines(fileName);
+                                List<string> selectedColumns = Functions.SplitString(lineWords[1], new char[] { ',', ' ' });
 
-                                try
+                                //int columnsCount = Functions.split(lines[2], '\t').Count;
+                                //int selectedColumns = Functions.SplitString(lineWords[1], new char[] { ',', ' ' }).Count;
+                                List<List<string>> selectedColumnsValues = new List<List<string>>();
+                                foreach (string selectedColumn in selectedColumns)
                                 {
-                                    tableName = lineWords[2];
+                                    List<string> columnsTotal = Functions.Split(lines[2], '\t');
+                                    int selectedColumnIndex = FindIndex(columnsTotal, selectedColumn);
+                                    List<string> temp = new List<string>();
 
-                                    if (Functions.SplitString(lineWords2[1], new char[] { ' ', ',' }).Count
-                                        == Functions.SplitString(lineWords2[3], new char[] { ' ', ',' }).Count)
+                                    for (int i = 3; i < lines.Length; i++)
                                     {
-                                        for (int i = 3; i < lineWords2.Count; i += 2)
-                                        {
-                                            valueLines.Add(Functions.SplitString(lineWords2[i], new char[] { ' ', ',' }));
-                                        }              
-
-                                        Functions.Insert(tableName, valueLines);
-                                        valueLines.Clear();                                      
+                                        temp.Add(Functions.Split(lines[i], '\t')[selectedColumnIndex]);
                                     }
+                                    selectedColumnsValues.Add(temp);
+                                    temp.Clear();
                                 }
-                                catch(Exception e)
-                                {
-                                    return;
-                                }                             
                             }
-                            break;
-                        case "Delete": //Delete FROM Sample (Id, Name, Town) VALUES (1, Marto, Aitos)
+                            catch (Exception e)
                             {
-                                List<string> lineWords2 = Functions.SplitString(line, new char[] { '(', ')' });
-
-                                if (lineWords[1].Equals("INTO") && lineWords2[2].Equals(" VALUES ")) return;
-
-                                try
-                                {
-                                    tableName = lineWords[2];                                 
-
-                                    if (Functions.SplitString(lineWords2[1], new char[] { ' ', ',' }).Count
-                                        == Functions.SplitString(lineWords2[3], new char[] { ' ', ',' }).Count)
-                                    {
-                                        List<string> linesToRemove = new List<string>();
-
-                                        for (int i = 3; i < lineWords2.Count; i += 2)
-                                        {
-                                            linesToRemove = Functions.SplitString(lineWords2[i], new char[] { ' ', ',' });
-                                        }
-
-                                        Functions.Delete(tableName, linesToRemove);
-                                        valueLines.Clear();
-                                    }
-                                }
-                                catch (Exception e)
-                                {
-                                    return;
-                                }
+                                return;
                             }
-                                break;
-                        case "TableInfo":
-                            {
-                                tableName = lineWords[1];
-                                Functions.TableInfo(tableName);
-                            }
-                            break;
-                        case "ListTables":
-                            {
-                                Functions.ListTables();
-                            }
-                        break;   
-                        case "Select": //Select (Name, DateBirth) FROM Sample WHERE Id <> 5 AND DateBirth > “01.01.2000”
-                            {
-                                try
-                                {
-                                    List<string> lineWords2 = Functions.SplitString(line, new char[] { '(', ')' });
-
-                                    //read table...
-                                    //check the columns...
-                                    //save in list...
-                                    tableName = lineWords[3];
-                                    string fileName = $@"D:\{tableName}.txt";
-                                    string[] lines = File.ReadAllLines(fileName);
-                                    List<string> selectedColumns = Functions.SplitString(lineWords[1], new char[] { ',', ' ' });
-
-                                    //int columnsCount = Functions.split(lines[2], '\t').Count;
-                                    //int selectedColumns = Functions.SplitString(lineWords[1], new char[] { ',', ' ' }).Count;
-                                    List<List<string>> selectedColumnsValues = new List<List<string>>();
-                                    foreach (string selectedColumn in selectedColumns)
-                                    {
-                                        List<string> columnsTotal = Functions.Split(lines[2], '\t');
-                                        int selectedColumnIndex = FindIndex(columnsTotal, selectedColumn);
-                                        List<string> temp = new List<string>();
-
-                                        for (int i = 3; i < lines.Length; i++)
-                                        {
-                                            temp.Add(Functions.Split(lines[i], '\t')[selectedColumnIndex]);
-                                        }
-                                        selectedColumnsValues.Add(temp);
-                                        temp.Clear();
-                                    }
-                                }
-                                catch(Exception e)
-                                {
-                                    return;
-                                }
-                            }
-                            break;
-                        case "Exit":
-                            exit = true;
-                            break;
-                        case "":
-                            Console.WriteLine("Please enter a command to continue!\n\n\n");
-                            break;
-                        default:
-                            Console.WriteLine("Invalid command!\n\n\n");
-                            break;
-                    }
+                        }
+                        break;
+                    case "exit":
+                        exit = true;
+                        break;
+                    case "":
+                        Console.WriteLine("Please enter a command to continue!\n\n\n");
+                        break;
+                    default:
+                        Console.WriteLine("Invalid command!\n\n\n");
+                        break;
+                }
             }
         }
 
