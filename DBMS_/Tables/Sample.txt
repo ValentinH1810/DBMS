@@ -1,3 +1,5 @@
 Table name: Sample
 
-Id		Name		Town		
+Id(int)	Name(string)	BirthDate(date default 01.01.2022)	
+1	Иван	01.01.2022	
+1	Валентин	18.10.2001	

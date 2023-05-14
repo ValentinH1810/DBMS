@@ -1,0 +1,6 @@
+Table name: People
+
+Id(int)	Name(string)	Town(string)	
+1	Валентин	Сливен	
+2	Васил	Сливен	
+3	Иван	Ямбол	
